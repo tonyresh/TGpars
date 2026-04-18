@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Settings Validation
+    function isValidSetting(data) {
+      return (data.telegramBotToken == null || data.telegramBotToken is string)
+          && (data.checkInterval == null || data.checkInterval is number)
+          && (data.aiPrompt == null || data.aiPrompt is string)
+          && (data.globalHeader == null || data.globalHeader is string)
+          && (data.globalFooter == null || data.globalFooter is string)
+          && (data.isActive == null || data.isActive is bool)
+          && (data.postDelay == null || data.postDelay is number)
+          && (data.blockedKeywords == null || data.blockedKeywords is string);
+    }
+
+    match /settings/config {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidSetting(incoming());
+    }
+
+    // Donor Channels
+    function isValidDonor(data) {
+      return data.channelId is string && data.channelId.size() > 0
+          && data.title is string && data.title.size() > 0
+          && (data.isActive == null || data.isActive is bool)
+          && (data.lastPostId == null || data.lastPostId is number)
+          && (data.addedAt == null || data.addedAt is timestamp);
+    }
+
+    match /donor_channels/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidDonor(incoming());
+      allow update: if isSignedIn() && isValidDonor(incoming()) 
+          && incoming().diff(existing()).affectedKeys().hasAny(['channelId', 'title', 'isActive', 'lastPostId']);
+      allow delete: if isSignedIn();
+    }
+
+    // Target Channels
+    function isValidTarget(data) {
+      return data.channelId is string && data.channelId.size() > 0
+          && data.title is string && data.title.size() > 0
+          && (data.isActive == null || data.isActive is bool)
+          && (data.addedAt == null || data.addedAt is timestamp);
+    }
+
+    match /target_channels/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidTarget(incoming());
+      allow update: if isSignedIn() && isValidTarget(incoming())
+          && incoming().diff(existing()).affectedKeys().hasAny(['channelId', 'title', 'isActive']);
+      allow delete: if isSignedIn();
+    }
+
+    // Posts
+    match /posts/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Simplified for internal use, usually server-driven
+    }
+
+    // Logs
+    match /logs/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if false;
+      allow delete: if isSignedIn();
+    }
+  }
+}

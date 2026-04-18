@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "Setting": {
+      "title": "Settings",
+      "description": "Global application configuration",
+      "type": "object",
+      "properties": {
+        "checkInterval": { "type": "number", "description": "Interval in minutes between donor checks" },
+        "aiPrompt": { "type": "string", "description": "Custom prompt for content uniqueization" },
+        "globalHeader": { "type": "string", "description": "Default header for all posts" },
+        "globalFooter": { "type": "string", "description": "Default footer for all posts" },
+        "postDelay": { "type": "number", "description": "Delay in seconds between target posts" },
+        "blockedKeywords": { "type": "string", "description": "Comma separated list of keywords to skip" },
+        "telegramBotToken": { "type": "string", "description": "Telegram Bot Token for publishing" },
+        "isActive": { "type": "boolean", "description": "Whether the automation is running" }
+      },
+      "required": ["telegramBotToken"]
+    },
+    "DonorChannel": {
+      "title": "Donor Channel",
+      "description": "A channel to monitor for new content",
+      "type": "object",
+      "properties": {
+        "channelId": { "type": "string", "description": "Telegram Channel ID or Username" },
+        "title": { "type": "string", "description": "Friendly name of the channel" },
+        "isActive": { "type": "boolean", "description": "Monitoring status" },
+        "lastPostId": { "type": "number", "description": "ID of the last processed post" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["channelId", "title"]
+    },
+    "TargetChannel": {
+      "title": "Target Channel",
+      "description": "A channel where unique content is published",
+      "type": "object",
+      "properties": {
+        "channelId": { "type": "string", "description": "Telegram Channel ID or Username" },
+        "title": { "type": "string", "description": "Friendly name of the channel" },
+        "isActive": { "type": "boolean", "description": "Publication status" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["channelId", "title"]
+    },
+    "PostLog": {
+      "title": "Post Log",
+      "description": "Record of a processed post",
+      "type": "object",
+      "properties": {
+        "sourceChannelId": { "type": "string" },
+        "targetChannelId": { "type": "string" },
+        "originalText": { "type": "string" },
+        "uniquizedText": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "published", "failed"] },
+        "error": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "LogEntry": {
+      "title": "Log Entry",
+      "description": "Real-time system event log",
+      "type": "object",
+      "properties": {
+        "message": { "type": "string" },
+        "level": { "type": "string", "enum": ["info", "success", "warning", "error"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "settings/config": { "schema": "Setting", "description": "Global app config" },
+    "donor_channels/{id}": { "schema": "DonorChannel", "description": "Configured donor channels" },
+    "target_channels/{id}": { "schema": "TargetChannel", "description": "Configured target channels" },
+    "posts/{id}": { "schema": "PostLog", "description": "History of posts" },
+    "logs/{id}": { "schema": "LogEntry", "description": "System event logs" }
+  }
+}

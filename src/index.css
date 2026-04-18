@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+  
+  --color-glass: rgba(255, 255, 255, 0.1);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+  --color-accent: #00d2ff;
+  --color-danger: #ff4b2b;
+  --color-success: #2ecc71;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-white;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) fixed;
+    min-height: 100vh;
+  }
+}
+
+.glass-panel {
+  @apply bg-[var(--color-glass)] backdrop-blur-xl border border-[var(--color-glass-border)] rounded-[20px];
+}
+
+.glass-card {
+  @apply bg-[var(--color-glass)] backdrop-blur-xl border border-[var(--color-glass-border)] rounded-2xl;
+}
+
+.glass-input {
+  @apply bg-white/5 border border-[var(--color-glass-border)] rounded-lg text-white placeholder-white/30;
+}
+
+/* Custom scrollbar for glass look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20;
+}
+
